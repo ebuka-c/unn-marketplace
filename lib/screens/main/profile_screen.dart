@@ -1,5 +1,3 @@
-// lib/screens/profile/profile_screen.dart
-
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -10,7 +8,6 @@ import 'package:unn_commerce/shared/app_snackbar.dart';
 import '../../models/product_data_model.dart';
 import '../../services/auth_services.dart';
 import '../../data/constants.dart';
-import '../../services/products_services.dart';
 import '../../shared/confirm_delete_dialog.dart';
 
 const String defaultProductImageUrl =
@@ -37,18 +34,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String? _selectedCategory;
 
+  List<Product> _userProducts = [];
+
   @override
   void initState() {
     super.initState();
     _loadUserData();
-
-    // set default category to avoid validator failure
-    if (productCategories.isNotEmpty) {
-      _selectedCategory = productCategories.first;
-    }
-
-    // listen to product changes (ProductService must be a ChangeNotifier)
-    ProductService.instance.addListener(_onProductsChanged);
+    _loadSavedProducts();
   }
 
   Future<void> _loadUserData() async {
@@ -59,50 +51,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
-  @override
-  void dispose() {
-    ProductService.instance.removeListener(_onProductsChanged);
-    _productNameCtrl.dispose();
-    _productDescriptionCtrl.dispose();
-    _productAmountCtrl.dispose();
-    super.dispose();
+  Future<void> _loadSavedProducts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final productsJson = prefs.getStringList('user_products') ?? [];
+
+    setState(() {
+      _userProducts = productsJson
+          .map((p) => Product.fromJson(json.decode(p) as Map<String, dynamic>))
+          .toList();
+    });
   }
 
-  void _onProductsChanged() {
-    if (mounted) setState(() {});
+  Future<void> _saveProducts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final productsJson = _userProducts
+        .map((p) => json.encode(p.toJson()))
+        .toList();
+    await prefs.setStringList('user_products', productsJson);
   }
 
-  Future<void> _addProduct() async {
+  void _addProduct() {
     if (!_formKey.currentState!.validate()) return;
 
     final newProduct = Product(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: _productNameCtrl.text.trim(),
       description: _productDescriptionCtrl.text.trim(),
-      category:
-          _selectedCategory ??
-          (productCategories.isNotEmpty
-              ? productCategories.first
-              : 'Uncategorized'),
+      category: _selectedCategory ?? productCategories.first,
       price: double.parse(_productAmountCtrl.text.trim()),
       imageUrl: defaultProductImageUrl,
     );
 
-    await ProductService.instance.addProduct(newProduct);
+    setState(() {
+      _userProducts.add(newProduct);
+    });
+
+    _saveProducts();
 
     // Clear form
     _productNameCtrl.clear();
     _productDescriptionCtrl.clear();
     _productAmountCtrl.clear();
-    setState(
-      () => _selectedCategory = productCategories.isNotEmpty
-          ? productCategories.first
-          : null,
-    );
+    _selectedCategory = null;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Product added successfully!')),
-    );
+    appSnackBar(context, message: 'Product added successfully!', type: 1);
+  }
+
+  @override
+  void dispose() {
+    _productNameCtrl.dispose();
+    _productDescriptionCtrl.dispose();
+    _productAmountCtrl.dispose();
+    super.dispose();
   }
 
   String? _validatePrice(String? v) {
@@ -114,11 +114,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // compute products at build time so it reflects the latest state
-    final products = ProductService.instance.products
-        .where((p) => /* optional filter: only user's products */ true)
-        .toList();
-
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
       body: SingleChildScrollView(
@@ -144,18 +139,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Form(
               key: _formKey,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: 15,
                 children: [
-                  const SizedBox(height: 8),
-
                   TextFormField(
                     controller: _productNameCtrl,
-                    decoration: const InputDecoration(labelText: 'Name'),
+                    decoration: InputDecoration(labelText: 'Name'),
                     validator: (v) =>
                         (v == null || v.trim().isEmpty) ? 'Enter name' : null,
                   ),
-
-                  const SizedBox(height: 12),
 
                   TextFormField(
                     controller: _productDescriptionCtrl,
@@ -164,9 +155,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ? 'Enter description'
                         : null,
                   ),
-
-                  const SizedBox(height: 12),
-
                   DropdownButtonFormField<String>(
                     decoration: const InputDecoration(labelText: 'Category'),
                     items: productCategories
@@ -180,9 +168,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     validator: (v) =>
                         v == null || v.isEmpty ? 'Select category' : null,
                   ),
-
-                  const SizedBox(height: 12),
-
                   TextFormField(
                     controller: _productAmountCtrl,
                     decoration: const InputDecoration(labelText: 'Amount'),
@@ -191,9 +176,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     validator: _validatePrice,
                   ),
-
                   const SizedBox(height: 16),
-
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -211,30 +194,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-
             const Divider(height: 30, thickness: 2),
-
             const Text(
               'Your Products',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-
-            const SizedBox(height: 8),
-
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: products.length,
+              itemCount: _userProducts.length,
               itemBuilder: (context, index) {
-                final product = products[index];
+                final product = _userProducts[index];
                 return ListTile(
                   leading: product.imageUrl.isNotEmpty
                       ? Image.network(
                           product.imageUrl,
                           width: 60,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              Container(width: 60, color: Colors.grey.shade300),
                         )
                       : Container(width: 60, color: Colors.grey.shade300),
                   title: Text(product.name),
@@ -255,14 +231,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           );
 
                           if (confirm == true) {
-                            await ProductService.instance.removeProduct(
-                              product,
+                            setState(() {
+                              _userProducts.removeAt(index);
+                            });
+                            _saveProducts();
+
+                            appSnackBar(
+                              context,
+                              message: '${product.name} deleted',
+                              type: 1,
                             );
-                            appSnackBar(context, message: 'Product deleted');
-                            if (mounted) setState(() {});
                           }
                         },
-                        child: const Icon(Icons.delete_outline, size: 20),
+                        child: Icon(Icons.delete_outline, size: 20),
                       ),
                     ],
                   ),

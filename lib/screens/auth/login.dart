@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:unn_commerce/services/set_registered_students.dart';
 import 'package:unn_commerce/shared/app_snackbar.dart';
 import '../../services/auth_services.dart';
 import '../../validators.dart';
@@ -80,7 +81,14 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(
+        title: InkWell(
+          onTap: () {
+            setRegisteredStudents();
+          },
+          child: const Text('Login'),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 150),
         child: Form(

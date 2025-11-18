@@ -22,36 +22,65 @@ class AuthService {
     required String regNumber,
     required String username,
   }) async {
-    final sanitizedRegNumber = _sanitizeRegNumber(regNumber);
+    try {
+      // Check if reg number is valid against the centralized school database
+      final doc = await _db.collection('schoolData').doc('studentsList').get();
 
-    // Ensure regNumber not already in use
-    final regRef = _db.collection('regNumbers').doc(sanitizedRegNumber);
-    final regSnap = await regRef.get();
-    if (regSnap.exists) throw Exception('Registration number already in use');
+      if (!doc.exists ||
+          !(doc.data()?['registered_students'] as List<dynamic>).contains(
+            regNumber,
+          )) {
+        throw Exception(
+          'The registration number you submitted does not belong to a registered student',
+        );
+      }
 
-    final credential = await _auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-    await credential.user!.updateDisplayName(regNumber); // optional
-    await credential.user!.updateDisplayName(username);
+      // Existing check to ensure reg number not in use in regNumbers collection (optional)
+      final sanitizedRegNumber = _sanitizeRegNumber(regNumber.trim());
+      final regRef = _db.collection('regNumbers').doc(sanitizedRegNumber);
+      final regSnap = await regRef.get();
+      if (regSnap.exists) throw Exception('Registration number already in use');
 
-    // Create user doc and mapping
-    await _db.collection('users').doc(credential.user!.uid).set({
-      'email': email,
-      'regNumber': regNumber,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-    await regRef.set({
-      'uid': credential.user!.uid,
-      'email': email,
-      'username': username,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+      // Proceed with Firebase Authentication sign up and user doc creation
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-    // Send verification email
-    await credential.user!.sendEmailVerification();
-    return credential;
+      await credential.user!.updateDisplayName(username);
+
+      await _db.collection('users').doc(credential.user!.uid).set({
+        'email': email,
+        'regNumber': regNumber,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      await regRef.set({
+        'uid': credential.user!.uid,
+        'email': email,
+        'username': username,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      await credential.user!.sendEmailVerification();
+
+      return credential;
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'email-already-in-use':
+          throw Exception('The email address is already registered.');
+        case 'invalid-email':
+          throw Exception('The email address is not valid.');
+        case 'weak-password':
+          throw Exception(
+            'The password is too weak. Please choose a stronger password.',
+          );
+        case 'operation-not-allowed':
+          throw Exception('Email/Password sign up is not enabled.');
+        default:
+          throw Exception('Failed to sign up: ${e.message}');
+      }
+    }
   }
 
   Future<UserCredential> signInWithEmailOrReg({

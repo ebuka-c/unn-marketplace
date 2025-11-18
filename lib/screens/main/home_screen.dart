@@ -1,15 +1,12 @@
-// lib/screens/home/home_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:unn_commerce/shared/app_snackbar.dart';
 
 import '../../data/constants.dart';
 import '../../models/product_data_model.dart';
 import '../../services/auth_services.dart';
 import '../../services/cart_service.dart';
 import '../../services/helpers.dart';
-import '../../services/products_services.dart';
-import '../../shared/app_snackbar.dart';
 import 'product_details.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -25,64 +22,54 @@ class _HomeScreenState extends State<HomeScreen>
   String userName = '';
   bool loading = true;
 
-  // categorizedProducts keyed by category name
   late Map<String, List<Product>> categorizedProducts;
-
-  final auth = AuthService.instance;
 
   @override
   void initState() {
     super.initState();
-    // Listen to product changes so UI updates automatically
-    ProductService.instance.addListener(_onProductsChanged);
     _loadUserAndData();
   }
 
+  final auth = AuthService.instance;
+
   Future<void> _loadUserAndData() async {
-    // Load user display name
     final user = auth.currentUser;
     if (user != null) {
-      userName = user.displayName ?? '';
+      setState(() {
+        userName = user.displayName ?? '';
+      });
     }
 
-    // Initialize categorizedProducts from ProductService
-    categorizedProducts = groupProductsByCategory(
-      ProductService.instance.products,
-    );
+    categorizedProducts = groupProductsByCategory(mockProducts);
 
-    // Ensure TabController is created after we know the categories
     _tabController = TabController(
       length: productCategories.length,
       vsync: this,
     );
 
-    if (mounted) {
-      setState(() {
-        loading = false;
-      });
-    }
-  }
-
-  void _onProductsChanged() {
-    // Re-categorize products when ProductService notifies
-    if (!mounted) return;
     setState(() {
-      categorizedProducts = groupProductsByCategory(
-        ProductService.instance.products,
-      );
+      loading = false;
     });
   }
 
   void _logout() async {
     final auth = AuthService.instance;
-    await auth.signOut();
+    await auth
+        .signOut(); // Add a signOut method in your AuthService if not present
+    // After logout, navigate to login screen and clear navigation stack
     if (mounted) {
-      Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false);
+      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
     }
   }
 
+  @override
+  void dispose() {
+    _tabController?.dispose();
+    super.dispose();
+  }
+
   void _navigateToFeature(String feature) {
-    Navigator.pop(context); // close drawer
+    Navigator.pop(context); // Close drawer
     if (feature == 'Logout') {
       _logout();
       return;
@@ -95,14 +82,7 @@ class _HomeScreenState extends State<HomeScreen>
       Navigator.pushNamed(context, '/profile');
       return;
     }
-    appSnackBar(context, message: 'Navigate to $feature (to be implemented)');
-  }
-
-  @override
-  void dispose() {
-    ProductService.instance.removeListener(_onProductsChanged);
-    _tabController?.dispose();
-    super.dispose();
+    // appSnackBar(context, message: 'Navigate to $feature (to be implemented)');
   }
 
   @override
@@ -201,7 +181,6 @@ class _HomeScreenState extends State<HomeScreen>
           ],
         ),
       ),
-
       body: Column(
         children: [
           Container(
@@ -223,7 +202,6 @@ class _HomeScreenState extends State<HomeScreen>
                     child: Text('No products in this category'),
                   );
                 }
-
                 return ListView.builder(
                   padding: const EdgeInsets.all(8),
                   itemCount: products.length,
@@ -237,11 +215,6 @@ class _HomeScreenState extends State<HomeScreen>
                                 product.imageUrl,
                                 width: 60,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Container(
-                                      width: 60,
-                                      color: Colors.grey.shade300,
-                                    ),
                               )
                             : Container(width: 60, color: Colors.grey.shade300),
                         title: Text(product.name),
