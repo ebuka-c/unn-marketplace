@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "220287804038",
+    "project_id": "unn-commerce",
+    "storage_bucket": "unn-commerce.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:220287804038:android:ad5d1c6560821117136707",
+        "android_client_info": {
+          "package_name": "com.example.unn_commerce"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1RW-8aYQoC76LDR5ZzM73csW3F0M0rRQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
