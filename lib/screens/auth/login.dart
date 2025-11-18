@@ -93,26 +93,14 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 50),
               TextFormField(
                 controller: _idCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Email or Reg. Number',
-                  enabledBorder: enabledBorder,
-                  focusedBorder: focusedBorder,
-                  errorBorder: errorBorder,
-                  focusedErrorBorder: focusedErrorBorder,
-                ),
+                decoration: InputDecoration(labelText: 'Email or Reg. Number'),
                 validator: validateLoginId,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _passwordCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  enabledBorder: enabledBorder,
-                  focusedBorder: focusedBorder,
-                  errorBorder: errorBorder,
-                  focusedErrorBorder: focusedErrorBorder,
-                ),
+                decoration: InputDecoration(labelText: 'Password'),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
 
                 obscureText: true,

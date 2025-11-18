@@ -3,12 +3,29 @@ import 'package:flutter/material.dart';
 import 'package:unn_commerce/firebase_options.dart';
 
 import 'package:unn_commerce/screens/auth/login.dart';
+import 'package:unn_commerce/screens/main/cart_screen.dart';
 import 'package:unn_commerce/screens/main/home_screen.dart';
 import 'screens/auth/forgot_password.dart';
 import 'screens/auth/sign_up.dart';
 import 'screens/auth/verify_email.dart';
 import 'screens/intro/splash_screen.dart';
+import 'screens/main/profile_screen.dart';
 import 'services/auth_services.dart';
+
+final _enabledBorder = OutlineInputBorder(
+  borderSide: BorderSide(color: Colors.grey.shade400),
+);
+final _focusedBorder = OutlineInputBorder(
+  borderSide: BorderSide(color: Colors.grey.shade400),
+);
+
+final _errorBorder = OutlineInputBorder(
+  borderSide: BorderSide(color: Colors.red.shade400),
+);
+
+final _focusedErrorBorder = OutlineInputBorder(
+  borderSide: BorderSide(color: Colors.red.shade700),
+);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,13 +38,24 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    // Initialize AuthService singleton (optional)
     AuthService.instance; // ensure created
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'UNN-Commerce',
-      theme: ThemeData(primarySwatch: Colors.green),
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+        progressIndicatorTheme: const ProgressIndicatorThemeData(
+          color: Colors.white,
+          strokeWidth: 1,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          enabledBorder: _enabledBorder,
+          focusedBorder: _focusedBorder,
+          errorBorder: _errorBorder,
+          focusedErrorBorder: _focusedErrorBorder,
+        ),
+      ),
       initialRoute: '/',
       routes: {
         '/': (_) => const SplashScreen(),
@@ -35,7 +63,9 @@ class MyApp extends StatelessWidget {
         '/signup': (_) => const SignUpScreen(),
         '/verify-email': (_) => const VerifyEmailScreen(),
         '/forgot-password': (_) => const ForgotPasswordScreen(),
+        '/cart': (_) => const CartScreen(),
         '/home-screen': (_) => const HomeScreen(),
+        '/profile': (_) => const ProfileScreen(),
       },
     );
   }

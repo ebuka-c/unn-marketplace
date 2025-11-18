@@ -9,7 +9,7 @@ String? validateRegNumber(String? v) {
   if (v == null || v.isEmpty) return 'Enter registration number';
   final regRegex = RegExp(r'^\d{4}/\d{6}$');
   if (!regRegex.hasMatch(v.trim())) {
-    return 'Reg Number must be in format YYYY/######';
+    return 'Reg Number must be in format 2020/123456';
   }
   return null;
 }
@@ -31,7 +31,7 @@ String? validateLoginId(String? v) {
   if (emailRegex.hasMatch(input) || regRegex.hasMatch(input)) {
     return null;
   }
-  return 'Enter a valid email or registration number (YYYY/######)';
+  return 'Enter a valid email or registration number (2020/123456)';
 }
 
 String? validateUsername(String? v) {

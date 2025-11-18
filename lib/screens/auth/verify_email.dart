@@ -25,10 +25,6 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       }
     } catch (e) {
       appSnackBar(context, message: e.toString(), type: 3);
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       if (mounted) setState(() => _sending = false);
     }

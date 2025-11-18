@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:unn_commerce/shared/app_snackbar.dart';
 import 'package:unn_commerce/validators.dart';
 
 import '../../services/auth_services.dart';
-import 'login.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -27,14 +27,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final auth = AuthService.instance;
     try {
       await auth.sendPasswordReset(_emailCtrl.text.trim());
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password reset email sent')),
-      );
+
+      appSnackBar(context, message: 'Password reset email sent', type: 1);
       Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      appSnackBar(context, message: e.toString(), type: 1);
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -57,13 +54,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
               TextFormField(
                 controller: _emailCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  enabledBorder: enabledBorder,
-                  focusedBorder: focusedBorder,
-                  errorBorder: errorBorder,
-                  focusedErrorBorder: focusedErrorBorder,
-                ),
+                decoration: InputDecoration(labelText: 'Email'),
                 keyboardType: TextInputType.emailAddress,
                 validator: validateEmail,
                 autovalidateMode: AutovalidateMode.onUserInteraction,

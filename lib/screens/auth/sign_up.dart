@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../services/auth_services.dart';
 import '../../shared/app_snackbar.dart';
 import '../../validators.dart';
-import 'login.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -83,13 +82,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(height: 50),
                 TextFormField(
                   controller: _usernameCtrl,
-                  decoration: InputDecoration(
-                    labelText: 'Username',
-                    enabledBorder: enabledBorder,
-                    focusedBorder: focusedBorder,
-                    errorBorder: errorBorder,
-                    focusedErrorBorder: focusedErrorBorder,
-                  ),
+                  decoration: InputDecoration(labelText: 'Username'),
                   validator: validateUsername,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
@@ -97,13 +90,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 TextFormField(
                   controller: _emailCtrl,
 
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    enabledBorder: enabledBorder,
-                    focusedBorder: focusedBorder,
-                    errorBorder: errorBorder,
-                    focusedErrorBorder: focusedErrorBorder,
-                  ),
+                  decoration: InputDecoration(labelText: 'Email'),
                   keyboardType: TextInputType.emailAddress,
                   validator: validateEmail,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -111,26 +98,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _regCtrl,
-                  decoration: InputDecoration(
-                    labelText: 'School Reg. Number',
-                    enabledBorder: enabledBorder,
-                    focusedBorder: focusedBorder,
-                    errorBorder: errorBorder,
-                    focusedErrorBorder: focusedErrorBorder,
-                  ),
+                  decoration: InputDecoration(labelText: 'School Reg. Number'),
                   validator: validateRegNumber,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _passwordCtrl,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    enabledBorder: enabledBorder,
-                    focusedBorder: focusedBorder,
-                    errorBorder: errorBorder,
-                    focusedErrorBorder: focusedErrorBorder,
-                  ),
+                  decoration: InputDecoration(labelText: 'Password'),
                   obscureText: true,
                   validator: validatePassword,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
