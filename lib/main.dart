@@ -5,6 +5,7 @@ import 'package:unn_commerce/firebase_options.dart';
 import 'package:unn_commerce/screens/auth/login.dart';
 import 'package:unn_commerce/screens/main/cart_screen.dart';
 import 'package:unn_commerce/screens/main/home_screen.dart';
+import 'package:unn_commerce/screens/main/payment_screen.dart';
 import 'screens/auth/forgot_password.dart';
 import 'screens/auth/sign_up.dart';
 import 'screens/auth/verify_email.dart';
@@ -66,6 +67,7 @@ class MyApp extends StatelessWidget {
         '/cart': (_) => const CartScreen(),
         '/home-screen': (_) => const HomeScreen(),
         '/profile': (_) => const ProfileScreen(),
+        // '/payment-screen': (_) => const PaymentScreen(),
       },
     );
   }

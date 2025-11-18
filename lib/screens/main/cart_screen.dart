@@ -1,6 +1,7 @@
 // screens/cart/cart_screen.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:unn_commerce/screens/main/payment_screen.dart';
 import '../../services/cart_service.dart';
 import '../../models/cart_item_model.dart';
 import '../../shared/app_snackbar.dart';
@@ -14,6 +15,15 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   final CartService _cartService = CartService.instance;
+  List<PaymentItem> get items => _cartService.cartItems.map((cartItem) {
+    return PaymentItem(
+      name: cartItem.name,
+      price: cartItem.price,
+      quantity: cartItem.quantity,
+    );
+  }).toList();
+
+  double get totalAmount => _cartService.totalAmount;
 
   @override
   void initState() {
@@ -274,7 +284,12 @@ class _CartScreenState extends State<CartScreen> {
             child: ElevatedButton(
               onPressed: () {
                 // Navigate to checkout
-                Navigator.pushNamed(context, '/checkout');
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) =>
+                        PaymentScreen(items: items, totalAmount: totalAmount),
+                  ),
+                );
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
               child: const Text(
